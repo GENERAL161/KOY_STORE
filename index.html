@@ -1,113 +1,68 @@
-Import random
-import string
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>مولد يوزرات</title>
+</head>
+<body style="background:black;color:white;text-align:center;margin-top:50px;">
 
-def is_valid_username(name, allowed_letters, want_dot, want_underscore, want_numbers, base_length):
-    allowed_chars = set(allowed_letters + string.digits + "._")
+<h2>مولد يوزرات رباعية</h2>
 
-    if any(c not in allowed_chars for c in name):
-        return False
+<input id="letters" placeholder="حروف (مثال abcxyz)">
+<br><br>
 
-    if not want_dot and "." in name:
-        return False
+<input id="count" type="number" placeholder="عدد اليوزرات">
+<br><br>
 
-    if not want_underscore and "_" in name:
-        return False
+<label><input type="checkbox" id="dot"> نقطة .</label>
+<label><input type="checkbox" id="underscore"> _</label>
+<label><input type="checkbox" id="numbers"> أرقام</label>
 
-    has_numbers = any(c.isdigit() for c in name)
-    if want_numbers != has_numbers:
-        return False
+<br><br>
 
-    base = name
-    if "." in base:
-        base = base.replace(".", "")
-    if "_" in base:
-        base = base.replace("_", "")
-    if want_numbers:
-        base = "".join(c for c in base if not c.isdigit())
+<button onclick="generate()">توليد</button>
 
-    if len(base) < base_length:
-        return False
+<p id="result"></p>
 
-    return True
+<script>
+function generate() {
+  let letters = document.getElementById("letters").value || "abcdefghijklmnopqrstuvwxyz";
+  let count = parseInt(document.getElementById("count").value) || 10;
+  let useDot = document.getElementById("dot").checked;
+  let useUnderscore = document.getElementById("underscore").checked;
+  let useNumbers = document.getElementById("numbers").checked;
 
+  let results = [];
 
-def generate_username(letters, base_length=4, use_dot=False, use_underscore=False, use_numbers=False):
-    name = "".join(random.choice(letters) for _ in range(base_length))
+  for (let i = 0; i < count; i++) {
+    let name = "";
 
-    sep = ""
-    if use_dot and use_underscore:
-        sep = random.choice([".", "_", ""])
-    elif use_dot:
-        sep = random.choice(["", "."])
-    elif use_underscore:
-        sep = random.choice(["", "_"])
+    for (let j = 0; j < 4; j++) {
+      name += letters[Math.floor(Math.random() * letters.length)];
+    }
 
-    if sep:
-        extra_len = random.randint(1, 2)
-        extra = "".join(random.choice(letters) for _ in range(extra_len))
-        name += sep + extra
+    let sep = "";
+    if (useDot && useUnderscore) sep = Math.random() > 0.5 ? "." : "_";
+    else if (useDot) sep = ".";
+    else if (useUnderscore) sep = "_";
 
-    if use_numbers:
-        name += str(random.randint(0, 99)).zfill(2)
+    if (sep) {
+      name += sep;
+      for (let j = 0; j < 2; j++) {
+        name += letters[Math.floor(Math.random() * letters.length)];
+      }
+    }
 
-    return name
+    if (useNumbers) {
+      name += Math.floor(Math.random() * 99);
+    }
 
+    results.push(name);
+  }
 
-def generate_checked_usernames(
-    count=50,
-    letters="abcdefghijklmnopqrstuvwxyz",
-    base_length=4,
-    use_dot=False,
-    use_underscore=False,
-    use_numbers=False
-):
-    results = set()
+  document.getElementById("result").innerHTML = results.join("<br>");
+}
+</script>
 
-    while len(results) < count:
-        name = generate_username(
-            letters=letters,
-            base_length=base_length,
-            use_dot=use_dot,
-            use_underscore=use_underscore,
-            use_numbers=use_numbers
-        )
-
-        if is_valid_username(
-            name=name,
-            allowed_letters=letters,
-            want_dot=use_dot,
-            want_underscore=use_underscore,
-            want_numbers=use_numbers,
-            base_length=base_length
-        ):
-            results.add(name)
-
-    return sorted(results)
-
-
-if __name__ == "__main__":
-    count = int(input("كم يوزر تبي؟: ") or "20")
-    letters = input("وش الحروف المسموحة؟ (مثال abcxyz): ").strip().lower() or string.ascii_lowercase
-    base_length = int(input("كم حرف أساسي؟ (مثال 4): ") or "4")
-    use_dot = input("تبي نقطة؟ (y/n): ").strip().lower() == "y"
-    use_underscore = input("تبي underscore؟ (y/n): ").strip().lower() == "y"
-    use_numbers = input("تبي أرقام؟ (y/n): ").strip().lower() == "y"
-
-    usernames = generate_checked_usernames(
-        count=count,
-        letters=letters,
-        base_length=base_length,
-        use_dot=use_dot,
-        use_underscore=use_underscore,
-        use_numbers=use_numbers
-    )
-
-    print("\nالنتائج:\n")
-    for u in usernames:
-        print(u)
-
-    with open("usernames.txt", "w", encoding="utf-8") as f:
-        for u in usernames:
-            f.write(u + "\n")
-
-    print("\nتم حفظ اليوزرات في ملف usernames.txt")
+</body>
+</html>
